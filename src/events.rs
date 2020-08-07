@@ -1,11 +1,14 @@
 
+use tokio::net::TcpStream;
+
 use super::enums::*;
 
 #[allow(dead_code)]
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Event {
+    CorruptEvent,
+
     AdvertisementPacket {
-        opcode: u8,
         scan_id: u32,
         bd_addr: String,
         name: String,
@@ -33,7 +36,25 @@ pub enum Event {
         removed_reason: RemovedReason,
     },
 
-    ButtonEvent {
+    ButtonUpOrDown{
+        conn_id: u32,
+        click_type: ClickType,
+        was_queued: bool,
+        time_diff: i32,
+    },
+    ButtonClickOrHold{
+        conn_id: u32,
+        click_type: ClickType,
+        was_queued: bool,
+        time_diff: i32,
+    },
+    ButtonSingleOrDoubleClick{
+        conn_id: u32,
+        click_type: ClickType,
+        was_queued: bool,
+        time_diff: i32,
+    },
+    ButtonSingleOrDoubleClickOrHold{
         conn_id: u32,
         click_type: ClickType,
         was_queued: bool,
@@ -41,12 +62,10 @@ pub enum Event {
     },
 
     NewVerifiedButton {
-        opcode: u8,
         bd_addr: String,
     },
 
     GetInfoResponse {
-        opcode: u8,
         bluetooth_controller_state: BluetoothControllerState,
         my_bd_addr: String,
         my_bd_addr_type: BdAddrType,
@@ -58,27 +77,22 @@ pub enum Event {
     },
 
     NoSpaceForNewConnection {
-        opcode: u8,
         max_concurrently_connected_buttons: u8,
     },
 
     GotSpaceForNewConnection {
-        opcode: u8,
         max_concurrently_connected_buttons: u8,
     },
 
     BluetoothControllerStateChange {
-        opcode: u8,
         state: BluetoothControllerState,
     },
 
     PingResponse {
-        opcode: u8,
         ping_id: u32,
     },
 
     GetButtonInfoResponse {
-        opcode: u8,
         bd_addr: String,
         uuid: String,
         color: Option<String>,
@@ -105,15 +119,51 @@ pub enum Event {
     },
 
     ButtonDeleted {
-        opcode: u8,
         bd_addr: String,
         deleted_by_this_client: bool,
     },
 
     BatteryStatus {
-        opcode: u8,
         listener_id: u32,
         battery_percentage: i8,
         timestamp: u64,
     },
 }
+
+impl Event {
+    pub fn opcode(&self) -> u8 {
+        match self {
+            Self::CorruptEvent => 255,
+            Self::AdvertisementPacket{..} => 0,
+            Self::CreateConnectionChannelResponse{..} => 1,
+            Self::ConnectionStatusChanged{..} => 2,
+            Self::ConnectionChannelRemoved{..} => 3,
+            Self::ButtonUpOrDown{..} => 4,
+            Self::ButtonClickOrHold{..} => 5,
+            Self::ButtonSingleOrDoubleClick{..} => 6,
+            Self::ButtonSingleOrDoubleClickOrHold{..} => 7,
+            Self::NewVerifiedButton{..} => 8,
+            Self::GetInfoResponse{..} => 9,
+            Self::NoSpaceForNewConnection{..} => 10,
+            Self::GotSpaceForNewConnection{..} => 11,
+            Self::BluetoothControllerStateChange{..} => 12,
+            Self::PingResponse{..} => 13,
+            Self::GetButtonInfoResponse{..} => 14,
+            Self::ScanWizardFoundPrivateButton{..} => 15,
+            Self::ScanWizardFoundPublicButton{..} => 16,
+            Self::ScanWizardButtonConnected{..} => 17,
+            Self::ScanWizardCompleted{..} => 18,
+            Self::ButtonDeleted{..} => 19,
+            Self::BatteryStatus{..} => 20,
+        }
+    }
+
+    pub fn read_event(opcode: u8, reader: &mut TcpStream) -> Event {
+        match opcode {
+            13 => Self::PingResponse{ping_id: 8},
+            _ => Self::CorruptEvent,
+        }
+    }
+        
+}
+
