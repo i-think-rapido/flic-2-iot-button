@@ -1,8 +1,5 @@
 
-use num_enum::TryFromPrimitive;
-use num_enum::IntoPrimitive;
-use tokio::io::*;
-use tokio::net::TcpStream;
+pub mod stream_mapper;
 
 use super::enums::LatencyMode;
 
@@ -75,25 +72,5 @@ impl Command {
         Self::CreateBatteryStatusListener{..} => 12,
         Self::RemoveBatteryStatusListener{..} => 13,
     }
-  }
-  pub fn write_command(&self, writer: &mut TcpStream) -> Result<()> {
-    match self {
-      Self::GetInfo{..} => 0,
-      Self::CreateScanner{..} => 1,
-      Self::RemoveScanner{..} => 2,
-      Self::CreateConnectionChannel{..} => 3,
-      Self::RemoveConnectionChannel{..} => 4,
-      Self::ForceDisconnect{..} => 5,
-      Self::ChangeModeParameters{..} => 6,
-      Self::Ping{..} => 7,
-      Self::GetButtonInfo{..} => 8,
-      Self::CreateScanWizard{..} => 9,
-      Self::CancelScanWizard{..} => 10,
-      Self::DeleteButton{..} => 11,
-      Self::CreateBatteryStatusListener{..} => 12,
-      Self::RemoveBatteryStatusListener{..} => 13,
-    };
-
-    Ok(())
   }
 }

@@ -1,22 +1,31 @@
 
-use std::sync::Arc;
-
 use tokio::io::*;
+
+use bytes::BufMut;
 use tokio::net::TcpStream;
 
-use super::events::*;
+use std::net::Shutdown;
+use std::sync::{Arc, Mutex, MutexGuard};
+use std::time::Duration;
+
+use super::events::Event;
+use super::events::stream_mapper::*;
+use super::commands::stream_mapper::CommandToByteMapper;
 use super::commands::Command;
 
-pub fn event_handler<F>(f: F) -> Box<dyn FnMut(Event)>
-        where F: FnMut(Event) + 'static
+type EventClosure = dyn FnMut(Event) + Sync + Send + 'static;
+type EventClosureMutex = Box<EventClosure>;
+
+pub fn event_handler<F>(f: F) -> EventClosureMutex
+        where F: FnMut(Event) + Sync + Send + 'static
     {
         Box::new(f)
     }
 
 pub struct FlicClient {
-    reader: Arc<TcpStream>,
-    writer: Arc<TcpStream>,
-    map: Vec<Box<dyn FnMut(Event)>>,
+    stream: TcpStream,
+    command_mapper: CommandToByteMapper,
+    map: Vec<EventClosureMutex>,
     is_running: bool,
 }
 
@@ -24,12 +33,10 @@ impl FlicClient {
     pub async fn new(conn: &str) -> Result<FlicClient> {
         match TcpStream::connect(conn).await {
             Ok(stream) => {
-                let reader = Arc::new(stream);
-                let writer = reader.clone();
-    
+                println!("stream open");
                 Ok(FlicClient{
-                    reader,
-                    writer,
+                    stream,
+                    command_mapper: CommandToByteMapper::new(),
                     map: vec![],
                     is_running: true,
                 })
@@ -38,30 +45,41 @@ impl FlicClient {
         }
         
     }
-    pub fn register_event_handler(mut self, event: Box<dyn FnMut(Event)>) -> Self {
+    pub fn register_event_handler(mut self, event: EventClosureMutex) -> Self {
         self.map.push(event);
         self
     }
     pub async fn listen(&mut self) {
+        let mut mapper = ByteToEventMapper::new();
+        let (mut reader, _writer) = self.stream.split();
+        let mut buffer = vec![];
         while self.is_running {
-            if let Some(mut r) = Arc::get_mut(&mut self.reader) {
-                if let Ok(value) = r.read_u8().await {
-                    for ref mut f in self.map.as_mut_slice() {
-                        f(Event::read_event(value, &mut r));
+            if let Some(size) = reader.read_buf(&mut buffer).await.ok() {
+                for b in buffer.iter() {
+                    match mapper.map(*b) {
+                        EventResult::Some(Event::NoOp) => {}
+                        EventResult::Some(event) => for ref mut f in &mut self.map {
+                            f(event.clone());
+                        }
+                        _ => {}
                     }
                 }
+
             }
         }
     }
-    pub fn stop(&mut self) {
+    pub async fn stop(&mut self) {
         self.is_running = false;
+        self.stream.shutdown(Shutdown::Both);
+        println!("stopped");
     }
 
-    pub fn submit(&mut self, cmd: Command) -> Result<()> {
-        if let Some(mut w) = Arc::get_mut(&mut self.writer) {
-            cmd.write_command(&mut w)?;
-        }
-        Ok(())
+    pub async fn submit(&mut self, cmd: Command) {
+        let (_reader, mut writer) = self.stream.split();
+            for b in self.command_mapper.map(cmd) {
+                writer.write_u8(b).await;
+                println!("{:?}", b);
+            }
     }
 }
 

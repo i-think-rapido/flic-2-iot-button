@@ -1,11 +1,41 @@
 
-use tokio::net::TcpStream;
+pub mod stream_mapper;
+
+use num_enum::TryFromPrimitive;
+use num_enum::IntoPrimitive;
 
 use super::enums::*;
+
+#[repr(u8)]
+#[derive(Debug, PartialEq, Eq, Hash, Copy, Clone, IntoPrimitive, TryFromPrimitive)]
+pub enum OpCode {
+  AdvertisementPacket = 0,
+  CreateConnectionChannelResponse = 1,
+  ConnectionStatusChanged = 2,
+  ConnectionChannelRemoved = 3,
+  ButtonUpOrDown = 4,
+  ButtonClickOrHold = 5,
+  ButtonSingleOrDoubleClick = 6,
+  ButtonSingleOrDoubleClickOrHold = 7,
+  NewVerifiedButton = 8,
+  GetInfoResponse = 9,
+  NoSpaceForNewConnection = 10,
+  GotSpaceForNewConnection = 11,
+  BluetoothControllerStateChange = 12,
+  PingResponse = 13,
+  GetButtonInfoResponse = 14,
+  ScanWizardFoundPrivateButton = 15,
+  ScanWizardFoundPublicButton = 16,
+  ScanWizardButtonConnected = 17,
+  ScanWizardCompleted = 18,
+  ButtonDeleted = 19,
+  BatteryStatus = 20,
+}
 
 #[allow(dead_code)]
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Event {
+    NoOp,
     CorruptEvent,
 
     AdvertisementPacket {
@@ -128,42 +158,5 @@ pub enum Event {
         battery_percentage: i8,
         timestamp: u64,
     },
-}
-
-impl Event {
-    pub fn opcode(&self) -> u8 {
-        match self {
-            Self::CorruptEvent => 255,
-            Self::AdvertisementPacket{..} => 0,
-            Self::CreateConnectionChannelResponse{..} => 1,
-            Self::ConnectionStatusChanged{..} => 2,
-            Self::ConnectionChannelRemoved{..} => 3,
-            Self::ButtonUpOrDown{..} => 4,
-            Self::ButtonClickOrHold{..} => 5,
-            Self::ButtonSingleOrDoubleClick{..} => 6,
-            Self::ButtonSingleOrDoubleClickOrHold{..} => 7,
-            Self::NewVerifiedButton{..} => 8,
-            Self::GetInfoResponse{..} => 9,
-            Self::NoSpaceForNewConnection{..} => 10,
-            Self::GotSpaceForNewConnection{..} => 11,
-            Self::BluetoothControllerStateChange{..} => 12,
-            Self::PingResponse{..} => 13,
-            Self::GetButtonInfoResponse{..} => 14,
-            Self::ScanWizardFoundPrivateButton{..} => 15,
-            Self::ScanWizardFoundPublicButton{..} => 16,
-            Self::ScanWizardButtonConnected{..} => 17,
-            Self::ScanWizardCompleted{..} => 18,
-            Self::ButtonDeleted{..} => 19,
-            Self::BatteryStatus{..} => 20,
-        }
-    }
-
-    pub fn read_event(opcode: u8, reader: &mut TcpStream) -> Event {
-        match opcode {
-            13 => Self::PingResponse{ping_id: 8},
-            _ => Self::CorruptEvent,
-        }
-    }
-        
 }
 
