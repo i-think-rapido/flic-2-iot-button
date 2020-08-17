@@ -8,8 +8,6 @@ use std::error::Error;
 use std::time::Duration;
 use std::sync::Arc;
 
-use tokio::sync::Mutex;
-
 use client::*;
 use commands::Command;
 
@@ -34,14 +32,12 @@ async fn main() -> Result<(), Box<dyn Error>> {
         client1.stop().await;
     });
     let lst = tokio::spawn(async move {
-        while client2.is_running().await {
-            client2.listen().await;
-        }
+        client2.listen().await;
         println!("stop");
     });
 
-    lst.await;
-    cmd.await;
+    lst.await?;
+    cmd.await?;
 
     Ok(())
 }
