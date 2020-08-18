@@ -1,5 +1,5 @@
 [package]
-name = "simpleclient"
+name = "flicbtn"
 version = "0.1.0"
 authors = ["Romeo Disca <romeo.disca@gmail.com>"]
 edition = "2018"

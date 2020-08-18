@@ -1,15 +1,10 @@
 
-mod enums;
-mod events;
-mod commands;
-mod client;
 
 use std::error::Error;
 use std::time::Duration;
 use std::sync::Arc;
 
-use client::*;
-use commands::Command;
+use flicbtn::*;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
