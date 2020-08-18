@@ -7,3 +7,4 @@ mod client;
 pub use client::*;
 pub use commands::Command;
 pub use events::Event;
+pub use enums::*;
