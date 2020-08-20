@@ -48,7 +48,6 @@ dependencies = [
 name = "flicbtn"
 version = "0.1.0"
 dependencies = [
- "bytes",
  "futures",
  "num_enum",
  "regex",

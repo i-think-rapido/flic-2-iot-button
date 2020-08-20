@@ -40,10 +40,9 @@ async fn main() -> Result<()> {
 
             let mut input = String::new();
             stdin().read_line(&mut input).expect("Did not enter correct string!");
+            let input = input.trim();
 
-            println!("[{}]", &input.as_str()[0..input.len()-2]);
-
-            match &input.as_str()[..input.len()-2] {
+            match input.as_str() {
                 "X" => break,
                 "1" => {
                     println!("-- start scan wizard");

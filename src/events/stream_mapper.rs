@@ -54,7 +54,7 @@ impl ByteToEventMapper {
 
   }
 
-  pub fn has_packet(&self) -> HasPacketResult {
+  fn has_packet(&self) -> HasPacketResult {
     match (self.fifo.get(0), self.fifo.get(1), self.fifo.get(2)) {
       (Some(&lower), Some(&upper), Some(&opcode)) => {
         let len = ((upper as usize) << 8) + (lower as usize);

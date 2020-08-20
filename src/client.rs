@@ -12,11 +12,11 @@ use super::events::stream_mapper::*;
 use super::commands::stream_mapper::CommandToByteMapper;
 use super::commands::Command;
 
-type EventClosure = dyn FnMut(Event) + Sync + Send + 'static;
+type EventClosure = dyn FnMut(&Event) + Sync + Send + 'static;
 type EventClosureMutex = Box<EventClosure>;
 
 pub fn event_handler<F>(f: F) -> EventClosureMutex
-        where F: FnMut(Event) + Sync + Send + 'static
+        where F: FnMut(&Event) + Sync + Send + 'static
     {
         Box::new(f)
     }
@@ -72,7 +72,7 @@ impl FlicClient {
                                 EventResult::Some(event) => {
                                     let mut map = self.map.lock().await;
                                     for ref mut f in &mut *map {
-                                        f(event.clone());
+                                        f(&event);
                                     }
                                 }
                                 _ => {}
