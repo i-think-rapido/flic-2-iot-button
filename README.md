@@ -18,3 +18,6 @@ For instance, there you can get FlicSDK.exe which is a server for Windows.
 - simpleclient -- performs button scans and registers buttons
 
 Hint: IP addresses and BlueTooth addresses should to be replaced to your needs to work properly.
+
+---
+Thank you for your review: [@matthiasbeyer](https://github.com/matthiasbeyer)

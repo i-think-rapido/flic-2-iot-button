@@ -31,20 +31,17 @@ pub struct FlicClient {
 
 impl FlicClient {
     pub async fn new(conn: &str) -> Result<FlicClient> {
-        match TcpStream::connect(conn).await {
-            Ok(stream) => {
-                let (reader, writer) = stream.into_split();
-                Ok(FlicClient {
-                    reader: Mutex::new(reader),
-                    writer: Mutex::new(writer),
-                    is_running: Mutex::new(true),
-                    command_mapper: Mutex::new(CommandToByteMapper::new()),
-                    event_mapper: Mutex::new(ByteToEventMapper::new()),
-                    map: Mutex::new(vec![]),
-                })
-            }
-            Err(err) => Err(err),
-        }
+        TcpStream::connect(conn)
+            .await
+            .map(|s| s.into_split())
+            .map(|(reader, writer)| FlicClient {
+                reader: Mutex::new(reader),
+                writer: Mutex::new(writer),
+                is_running: Mutex::new(true),
+                command_mapper: Mutex::new(CommandToByteMapper::new()),
+                event_mapper: Mutex::new(ByteToEventMapper::new()),
+                map: Mutex::new(vec![]),
+            })
     }
     pub async fn register_event_handler(self, event: EventClosureMutex) -> Self {
         self.map.lock().await.push(event);
