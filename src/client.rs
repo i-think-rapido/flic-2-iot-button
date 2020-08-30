@@ -1,25 +1,24 @@
-
-
 use futures::future::poll_fn;
 use futures::task::Poll;
-use tokio::net::TcpStream;
-use tokio::net::tcp::{OwnedReadHalf, OwnedWriteHalf};
 use tokio::io::*;
+use tokio::net::tcp::{OwnedReadHalf, OwnedWriteHalf};
+use tokio::net::TcpStream;
 use tokio::sync::Mutex;
 
-use super::events::Event;
-use super::events::stream_mapper::*;
 use super::commands::stream_mapper::CommandToByteMapper;
 use super::commands::Command;
+use super::events::stream_mapper::*;
+use super::events::Event;
 
 type EventClosure = dyn FnMut(&Event) + Sync + Send + 'static;
 type EventClosureMutex = Box<EventClosure>;
 
 pub fn event_handler<F>(f: F) -> EventClosureMutex
-        where F: FnMut(&Event) + Sync + Send + 'static
-    {
-        Box::new(f)
-    }
+where
+    F: FnMut(&Event) + Sync + Send + 'static,
+{
+    Box::new(f)
+}
 
 pub struct FlicClient {
     reader: Mutex<OwnedReadHalf>,
@@ -33,10 +32,9 @@ pub struct FlicClient {
 impl FlicClient {
     pub async fn new(conn: &str) -> Result<FlicClient> {
         match TcpStream::connect(conn).await {
-
             Ok(stream) => {
                 let (reader, writer) = stream.into_split();
-                Ok(FlicClient{
+                Ok(FlicClient {
                     reader: Mutex::new(reader),
                     writer: Mutex::new(writer),
                     is_running: Mutex::new(true),
@@ -45,9 +43,8 @@ impl FlicClient {
                     map: Mutex::new(vec![]),
                 })
             }
-            Err(err) => Err(err)
+            Err(err) => Err(err),
         }
-        
     }
     pub async fn register_event_handler(self, event: EventClosureMutex) -> Self {
         self.map.lock().await.push(event);
@@ -62,7 +59,9 @@ impl FlicClient {
                     Poll::Pending => Poll::Ready(Ok(0_usize)),
                     Poll::Ready(all) => Poll::Ready(all),
                 }
-            }).await{
+            })
+            .await
+            {
                 if size > 0 {
                     let mut buffer = vec![];
                     if let Some(_) = reader.read_buf(&mut buffer).await.ok() {
@@ -94,4 +93,3 @@ impl FlicClient {
         }
     }
 }
-

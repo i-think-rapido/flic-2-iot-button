@@ -1,35 +1,34 @@
-
 pub mod stream_mapper;
 
-use num_enum::TryFromPrimitive;
 use num_enum::IntoPrimitive;
+use num_enum::TryFromPrimitive;
 
 use super::enums::*;
 
 #[repr(u8)]
 #[derive(Debug, PartialEq, Eq, Hash, Copy, Clone, IntoPrimitive, TryFromPrimitive)]
 pub enum OpCode {
-  AdvertisementPacket = 0,
-  CreateConnectionChannelResponse = 1,
-  ConnectionStatusChanged = 2,
-  ConnectionChannelRemoved = 3,
-  ButtonUpOrDown = 4,
-  ButtonClickOrHold = 5,
-  ButtonSingleOrDoubleClick = 6,
-  ButtonSingleOrDoubleClickOrHold = 7,
-  NewVerifiedButton = 8,
-  GetInfoResponse = 9,
-  NoSpaceForNewConnection = 10,
-  GotSpaceForNewConnection = 11,
-  BluetoothControllerStateChange = 12,
-  PingResponse = 13,
-  GetButtonInfoResponse = 14,
-  ScanWizardFoundPrivateButton = 15,
-  ScanWizardFoundPublicButton = 16,
-  ScanWizardButtonConnected = 17,
-  ScanWizardCompleted = 18,
-  ButtonDeleted = 19,
-  BatteryStatus = 20,
+    AdvertisementPacket = 0,
+    CreateConnectionChannelResponse = 1,
+    ConnectionStatusChanged = 2,
+    ConnectionChannelRemoved = 3,
+    ButtonUpOrDown = 4,
+    ButtonClickOrHold = 5,
+    ButtonSingleOrDoubleClick = 6,
+    ButtonSingleOrDoubleClickOrHold = 7,
+    NewVerifiedButton = 8,
+    GetInfoResponse = 9,
+    NoSpaceForNewConnection = 10,
+    GotSpaceForNewConnection = 11,
+    BluetoothControllerStateChange = 12,
+    PingResponse = 13,
+    GetButtonInfoResponse = 14,
+    ScanWizardFoundPrivateButton = 15,
+    ScanWizardFoundPublicButton = 16,
+    ScanWizardButtonConnected = 17,
+    ScanWizardCompleted = 18,
+    ButtonDeleted = 19,
+    BatteryStatus = 20,
 }
 
 #[allow(dead_code)]
@@ -66,25 +65,25 @@ pub enum Event {
         removed_reason: RemovedReason,
     },
 
-    ButtonUpOrDown{
+    ButtonUpOrDown {
         conn_id: u32,
         click_type: ClickType,
         was_queued: bool,
         time_diff: i32,
     },
-    ButtonClickOrHold{
+    ButtonClickOrHold {
         conn_id: u32,
         click_type: ClickType,
         was_queued: bool,
         time_diff: i32,
     },
-    ButtonSingleOrDoubleClick{
+    ButtonSingleOrDoubleClick {
         conn_id: u32,
         click_type: ClickType,
         was_queued: bool,
         time_diff: i32,
     },
-    ButtonSingleOrDoubleClickOrHold{
+    ButtonSingleOrDoubleClickOrHold {
         conn_id: u32,
         click_type: ClickType,
         was_queued: bool,
@@ -159,4 +158,3 @@ pub enum Event {
         timestamp: u64,
     },
 }
-

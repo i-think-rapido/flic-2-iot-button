@@ -1,5 +1,3 @@
-
-
 use std::io::*;
 use std::sync::Arc;
 
@@ -7,12 +5,14 @@ use flicbtn::*;
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    let event = event_handler(|event| {
+        println!("ping response: {:?}", event);
+    });
 
-    let event = event_handler(|event| { println!("ping response: {:?}", event); });
-
-    let client = FlicClient::new("127.0.0.1:5551").await?
-        .register_event_handler(event).await
-    ;
+    let client = FlicClient::new("127.0.0.1:5551")
+        .await?
+        .register_event_handler(event)
+        .await;
     let client1 = Arc::new(client);
     let client2 = client1.clone();
 
@@ -22,7 +22,6 @@ async fn main() -> Result<()> {
     let mut conn_id = 0;
 
     let cmd = tokio::spawn(async move {
-
         println!("===============================================");
         println!("*** Hello to the Flic2 Button Simple Client ***");
         println!("===============================================");
@@ -30,7 +29,6 @@ async fn main() -> Result<()> {
         println!("");
 
         loop {
-
             show_commands();
 
             println!("");
@@ -39,7 +37,9 @@ async fn main() -> Result<()> {
             let _ = stdout().flush();
 
             let mut input = String::new();
-            stdin().read_line(&mut input).expect("Did not enter correct string!");
+            stdin()
+                .read_line(&mut input)
+                .expect("Did not enter correct string!");
             let input = input.trim();
 
             match input.as_str() {
@@ -47,33 +47,43 @@ async fn main() -> Result<()> {
                 "1" => {
                     println!("-- start scan wizard");
                     scan_wizard_id += 1;
-                    client1.submit(Command::CreateScanWizard{scan_wizard_id}).await;
+                    client1
+                        .submit(Command::CreateScanWizard { scan_wizard_id })
+                        .await;
                 }
                 "2" => {
                     println!("-- cancel scan wizard");
-                    client1.submit(Command::CancelScanWizard{scan_wizard_id}).await;
+                    client1
+                        .submit(Command::CancelScanWizard { scan_wizard_id })
+                        .await;
                     //scan_wizard_id -= 1;
                 }
                 "3" => {
                     println!("-- create connection channel");
                     conn_id += 1;
-                    client1.submit(Command::CreateConnectionChannel{
-                        conn_id, 
-                        bd_addr: button.to_string(),
-                        latency_mode: LatencyMode::NormalLatency,
-                        auto_disconnect_time: 11111_i16,
-                    }).await;
+                    client1
+                        .submit(Command::CreateConnectionChannel {
+                            conn_id,
+                            bd_addr: button.to_string(),
+                            latency_mode: LatencyMode::NormalLatency,
+                            auto_disconnect_time: 11111_i16,
+                        })
+                        .await;
                 }
                 "4" => {
                     println!("-- remove connection channel");
-                    client1.submit(Command::RemoveConnectionChannel{
-                        conn_id, 
-                    }).await;
+                    client1
+                        .submit(Command::RemoveConnectionChannel { conn_id })
+                        .await;
                     //conn_id -= 1;
                 }
                 "5" => {
                     println!("-- button info");
-                    client1.submit(Command::GetButtonInfo{bd_addr: button.to_string()}).await;
+                    client1
+                        .submit(Command::GetButtonInfo {
+                            bd_addr: button.to_string(),
+                        })
+                        .await;
                 }
                 _ => {
                     println!("-- unknown command");
