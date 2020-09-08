@@ -1,5 +1,7 @@
 [package]
 name = "flicbtn"
+description = "Flic 2 Button Client Library written in Rust"
+license = "MIT | Apache 2.0"
 version = "0.1.0"
 authors = ["Romeo Disca <romeo.disca@gmail.com>"]
 edition = "2018"
