@@ -2,7 +2,9 @@
 name = "flicbtn"
 description = "Flic 2 Button Client Library written in Rust"
 license = "MIT"
-version = "0.1.0"
+license-file = "LICENSE.md"
+repository = "https://github.com/i-think-rapido/flicbtn"
+version = "0.1.1"
 authors = ["Romeo Disca <romeo.disca@gmail.com>"]
 edition = "2018"
 
