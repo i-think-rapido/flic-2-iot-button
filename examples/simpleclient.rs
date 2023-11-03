@@ -42,7 +42,7 @@ async fn main() -> Result<()> {
                 .expect("Did not enter correct string!");
             let input = input.trim();
 
-            match input.as_str() {
+            match input {
                 "X" => break,
                 "1" => {
                     println!("-- start scan wizard");
